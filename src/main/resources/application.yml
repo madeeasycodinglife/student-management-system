@@ -33,6 +33,9 @@ spring:
 security:
   authorization:
     paths:
+
+      # Auth-Service
+
       - path: /auth-service/sign-up
         method: POST
         roles: []
