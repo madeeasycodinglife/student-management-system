@@ -1,0 +1,32 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:h2:mem:student-db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: 'create-drop'
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: student-management-system
+  output:
+    ansi:
+      enabled: ALWAYS
+
+logging:
+  level:
+    org:
+      springframework: DEBUG
+
