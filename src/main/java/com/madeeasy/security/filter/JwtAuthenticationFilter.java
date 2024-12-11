@@ -20,7 +20,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -67,12 +66,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleInvalidToken(response, e.getMessage());
             return; // Exit the filter chain
         }
-        String finalUserName = userName;
         User user = userRepository.findByEmail(userName)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email " + finalUserName));
+                .orElse(null);
         Token token = tokenRepository.findByToken(accessToken)
-                .orElseThrow(() -> new TokenException("Token Not found"));
-
+                .orElse(null);
+        if (token == null || user == null) {
+            handleInvalidToken(response, "Token Not Found or Invalid Token !!");
+            return;
+        }
         try {
             if (token.isExpired() || token.isRevoked()) {
                 throw new TokenException("Token is expired or revoked");
