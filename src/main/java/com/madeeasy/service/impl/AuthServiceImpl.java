@@ -5,12 +5,10 @@ import com.madeeasy.dto.request.LogOutRequest;
 import com.madeeasy.dto.request.SignInRequestDTO;
 import com.madeeasy.dto.request.UserRequest;
 import com.madeeasy.dto.response.AuthResponse;
-import com.madeeasy.entity.Role;
-import com.madeeasy.entity.Token;
-import com.madeeasy.entity.TokenType;
-import com.madeeasy.entity.User;
+import com.madeeasy.entity.*;
 import com.madeeasy.exception.TokenException;
 import com.madeeasy.exception.UsernameNotFoundException;
+import com.madeeasy.repository.AddressRepository;
 import com.madeeasy.repository.TokenRepository;
 import com.madeeasy.repository.UserRepository;
 import com.madeeasy.service.AuthService;
@@ -43,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
     private final AuthenticationManager authenticationManager;
+    private final AddressRepository addressRepository;
 
     @Override
     public AuthResponse singUp(AuthRequest authRequest) {
@@ -109,7 +108,6 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
 
-
         String accessToken = jwtUtils.generateAccessToken(user.getEmail(), user.getRole().stream().map(Enum::name).toList());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail(), user.getRole().stream().map(Enum::name).toList());
 
@@ -122,7 +120,20 @@ public class AuthServiceImpl implements AuthService {
                 .tokenType(TokenType.BEARER)
                 .build();
 
-        userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        Address address
+                = Address.builder()
+                .id(UUID.randomUUID().toString())
+                .pin(authRequest.getAddressRequestDTO().getPin())
+                .city(authRequest.getAddressRequestDTO().getCity())
+                .state(authRequest.getAddressRequestDTO().getState())
+                .country(authRequest.getAddressRequestDTO().getCountry())
+                .user(savedUser)
+                .build();
+
+        addressRepository.save(address);
 
         tokenRepository.save(token);
 
@@ -238,16 +249,16 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
 
-        if (userRequest.getEmail() != null) {
+        if (userRequest.getEmail() != null && !userRequest.getEmail().isBlank()) {
             user.setEmail(userRequest.getEmail());
         }
-        if (userRequest.getPhone() != null) {
+        if (userRequest.getPhone() != null && !userRequest.getPhone().isBlank()) {
             user.setPhone(userRequest.getPhone());
         }
-        if (userRequest.getPassword() != null) {
+        if (userRequest.getPassword() != null && !userRequest.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         }
-        if (userRequest.getRoles() != null) {
+        if (userRequest.getRoles() != null && !userRequest.getRoles().isEmpty()) {
             // Convert all roles to uppercase
             List<String> normalizedRoles = userRequest.getRoles().stream()
                     .map(String::toUpperCase) // Convert each role to uppercase
@@ -275,10 +286,26 @@ public class AuthServiceImpl implements AuthService {
             user.setRole(roles);
         }
 
+        if (userRequest.getAddressPartialRequestDTO() != null) {
+            if (userRequest.getAddressPartialRequestDTO().getPin() != null && !userRequest.getAddressPartialRequestDTO().getPin().isBlank()) {
+                user.getAddress().setPin(userRequest.getAddressPartialRequestDTO().getPin());
+            }
+            if (userRequest.getAddressPartialRequestDTO().getCity() != null && !userRequest.getAddressPartialRequestDTO().getCity().isBlank()) {
+                user.getAddress().setCity(userRequest.getAddressPartialRequestDTO().getCity());
+            }
+
+            if (userRequest.getAddressPartialRequestDTO().getState() != null && !userRequest.getAddressPartialRequestDTO().getState().isBlank()) {
+                user.getAddress().setState(userRequest.getAddressPartialRequestDTO().getState());
+            }
+
+            if (userRequest.getAddressPartialRequestDTO().getCountry() != null && !userRequest.getAddressPartialRequestDTO().getCountry().isBlank()) {
+                user.getAddress().setCountry(userRequest.getAddressPartialRequestDTO().getCountry());
+            }
+        }
 
         User savedUser = userRepository.save(user);
 
-        if (userRequest.getRoles() != null || userRequest.getEmail() != null) {
+        if ((userRequest.getRoles() != null && !userRequest.getRoles().isEmpty()) || (userRequest.getEmail() != null && !userRequest.getEmail().isBlank())) {
             revokeAllPreviousValidTokens(savedUser);
             String accessToken = jwtUtils.generateAccessToken(savedUser.getEmail(), savedUser.getRole().stream().map(role -> role.name()).collect(Collectors.toList()));
             String refreshToken = jwtUtils.generateRefreshToken(savedUser.getEmail(), savedUser.getRole().stream().map(role -> role.name()).collect(Collectors.toList()));
