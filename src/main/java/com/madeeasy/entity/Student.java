@@ -1,26 +1,29 @@
 package com.madeeasy.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+    private String id;
+    private String fullName;
+    private String email;
+    private String userId; // this will point to the specific user
 
-    @OneToOne(mappedBy = "student",cascade = CascadeType.ALL)
-    private Address address;
 
-    @ManyToMany
-    @JoinTable(name = "student_subject",
-            joinColumns = @JoinColumn(name = "student_id"),
-            inverseJoinColumns = @JoinColumn(name = "subject_id"))
-    private Set<Subject> subjects = new HashSet<>();
+    @ManyToMany(mappedBy = "students")
+    private List<Subject> subjects;
 }

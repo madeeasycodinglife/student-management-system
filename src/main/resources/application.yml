@@ -25,8 +25,47 @@ spring:
     ansi:
       enabled: ALWAYS
 
-logging:
-  level:
-    org:
-      springframework: DEBUG
+#logging:
+#  level:
+#    org:
+#      springframework: DEBUG
 
+security:
+  authorization:
+    paths:
+      - path: /auth-service/sign-up
+        method: POST
+        roles: []
+      - path: /auth-service/sign-in
+        method: POST
+        roles: []
+      - path: /auth-service/log-out
+        method: POST
+        roles: []
+      - path: /auth-service/validate-access-token/**
+        method: POST
+        roles: []
+      - path: /auth-service/refresh-token/**
+        method: POST
+        roles: []
+      - path: /auth-service/partial-update/**
+        method: PATCH
+        roles:
+          - ROLE_ADMIN
+          - ROLE_STUDENT
+
+      # Student-Service
+      - path: /student-service
+        method: POST
+        roles:
+          - ROLE_ADMIN
+      - path: /student-service
+        method: GET
+        roles:
+          - ROLE_ADMIN
+
+      # Subject-Service
+      - path: /subject-service/create
+        method: POST
+        roles:
+          - ROLE_ADMIN
