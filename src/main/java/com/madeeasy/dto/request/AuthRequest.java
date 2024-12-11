@@ -1,5 +1,6 @@
 package com.madeeasy.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -8,11 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
 @Data
 @Builder
+@Validated
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthRequest {
@@ -38,6 +41,7 @@ public class AuthRequest {
             message = "Phone number must be between 10 and 13 digits long and may optionally start with a '+' sign."
     )
     private String phone;
+    @Valid
     private AddressRequestDTO addressRequestDTO;
     @NotEmpty(message = "roles cannot be empty")
     private List<@NotBlank(message = "role cannot be blank") String> roles;

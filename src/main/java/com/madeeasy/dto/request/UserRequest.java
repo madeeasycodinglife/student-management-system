@@ -31,4 +31,5 @@ public class UserRequest {
 
     @Nullable
     private List<String> roles;
+    private AddressPartialRequestDTO addressPartialRequestDTO;
 }
