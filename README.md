@@ -97,7 +97,7 @@ Content-Type: application/json
 ### Retrieve All Subjects
 **Request**:
 ```http
-GET /subject-service/all
+GET /subject-service/all   
 ```
 **Response**:
 ```json
